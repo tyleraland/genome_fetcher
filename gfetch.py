@@ -49,13 +49,12 @@ def main():
         name = ' '.join(args.name)
         name = name[0].upper() + name[1:].lower()
         meta = meta[meta['Name'].str.contains(name, case=False)]
-    if args.status: # [complete, gapless_chromosome, ...]
+    if args.status:
         # If list of statuses was given, only look at organisms containing one of those
         statuses = args.status.split(' ')
-        statuses = ['(' + status.replace('_', ' ') + ')' for status in statuses]
+        statuses = ['(^' + status.replace('_', ' ') + '$)' for status in statuses]
         statuses = '|'.join(statuses)
-        statuses = '^' + statuses + '$'
-        meta = meta[meta['Status'].str.contains(status, case=False) ]
+        meta = meta[meta['Status'].str.contains(statuses, case=False) ]
     meta = meta[meta['FTP Path'] != '-'] # Drop entries with no data to download
     meta = meta.drop_duplicates('TaxID') # Occasionally this signals duplicate strains
 
