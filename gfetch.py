@@ -17,7 +17,7 @@ def get_args():
     parser.add_argument('action', help="'search' or 'fetch'")
     parser.add_argument('-n', '--name', nargs=2,
                         help="Scientific name, separated by spaces, case insensitive.\
-                              Name must exist somewhere in organism's listed name")
+                              Name must exist somewhere in genomes's organism name")
     parser.add_argument('-s', '--status', default="complete gapless_chromosome chromosome",
                         help="Types of genomes to consider, separated by spaces, case insensitive.\
                               Options: complete gapless_chromosome chromosome\
@@ -45,16 +45,18 @@ def main():
     meta = pandas.read_csv(manifest_file, header=0, sep='\t')
 
     if args.name:
-        # If a name was given, only look at organisms containing that name
+        # If a name was given, only look at genomes containing that name
         name = ' '.join(args.name)
         name = name[0].upper() + name[1:].lower()
         meta = meta[meta['Name'].str.contains(name, case=False)]
-    if args.status:
-        # If list of statuses was given, only look at organisms containing one of those
-        statuses = args.status.split(' ')
-        statuses = ['(^' + status.replace('_', ' ') + '$)' for status in statuses]
-        statuses = '|'.join(statuses)
-        meta = meta[meta['Status'].str.contains(statuses, case=False) ]
+
+    ## Status ##
+    # only look at genomes whose status matches one of the user-given statuses
+    statuses = args.status.split(' ')
+    statuses = ['(^' + status.replace('_', ' ') + '$)' for status in statuses]
+    statuses = '|'.join(statuses)
+    meta = meta[meta['Status'].str.contains(statuses, case=False) ]
+
     meta = meta[meta['FTP Path'] != '-'] # Drop entries with no data to download
     meta = meta.drop_duplicates('TaxID') # Occasionally this signals duplicate strains
 
